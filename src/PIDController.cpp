@@ -28,9 +28,9 @@ double PIDController::calculate(double setpoint, double measurement, double t, d
     integralMeasurements[measureStop][0] = t;
     integralMeasurements[measureStop][1] = error * dt;
     if (measureStart == measureStop) {
-        measureStart = (measureStart + 1) % INTEGRAL_SIZE
+        measureStart = (measureStart + 1) % INTEGRAL_SIZE;
     }
-    
+
     double derivative = (error - prev_error_) / dt;
     prev_error_ = error;
     double output = kp_ * error + ki_ * integral_ + kd_ * derivative;
