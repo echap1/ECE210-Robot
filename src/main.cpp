@@ -33,10 +33,10 @@ QTRSensors qtr;
 const uint8_t SensorCount = 8;
 uint16_t sensorValues[SensorCount];
 
-#define kP 0.4
-#define kI 0.01
-#define kD 1
-PIDController pid(kP, kI, kD, -1, 1);
+#define kP 0.35
+#define kI 0  //0.0001
+#define kD (-30)
+PIDController pid(kP, kI, kD, 1000, -1, 1);
 
 void motor_set(double r, double omega);
 void motor_set_vel(double v1, double v2);
@@ -124,7 +124,7 @@ void loop() {
         double t = millis();
         Serial.print("DT: ");
         Serial.println(t - t_last);
-        pid_out = pid.calculate(0, error, t - t_last);
+        pid_out = pid.calculate(0, error, t - t_last, t);
         Serial.print("PIP OUT: ");
         Serial.println(pid_out);
         t_last = t;

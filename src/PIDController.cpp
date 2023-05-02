@@ -14,22 +14,27 @@ double PIDController::calculate(double setpoint, double measurement, double t, d
 
     int i = measureStart;
     double cutoff = t - measureWindow;
-    for (; i <= measureStop; i++) {
+    for (;; i = (i + 1) % INTEGRAL_SIZE) {
         if (integralMeasurements[i][0] >= cutoff) {
-            i--;
             measureStart = i;
             break;
         }
-    }
-    for (; i <= measureStop; i++) {
-        integral_ += integralMeasurements[i][1];
+        if (i == measureStop) break;
     }
     measureStop = (measureStop + 1) % INTEGRAL_SIZE;
     integralMeasurements[measureStop][0] = t;
-    integralMeasurements[measureStop][1] = error * dt;
+    integralMeasurements[measureStop][1] = error * dt / 1000;
+    for (;; i = (i + 1) % INTEGRAL_SIZE) {
+        integral_ += integralMeasurements[i][1];
+        if (i == measureStop) break;
+    }
     if (measureStart == measureStop) {
         measureStart = (measureStart + 1) % INTEGRAL_SIZE;
     }
+
+    Serial.print("MeasureStart: "); Serial.println(measureStart);
+    Serial.print("MeasureStop: "); Serial.println(measureStop);
+    Serial.print("integral: "); Serial.println(integral_);
 
     double derivative = (error - prev_error_) / dt;
     prev_error_ = error;
