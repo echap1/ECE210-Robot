@@ -32,12 +32,12 @@ double PIDController::calculate(double setpoint, double measurement, double t, d
         measureStart = (measureStart + 1) % INTEGRAL_SIZE;
     }
 
-    Serial.print("MeasureStart: "); Serial.println(measureStart);
-    Serial.print("MeasureStop: "); Serial.println(measureStop);
-    Serial.print("integral: "); Serial.println(integral_);
-
     double derivative = (error - prev_error_) / dt;
     prev_error_ = error;
+
+    Serial.print("derivative: "); Serial.println(kd_ * derivative);
+    Serial.print("error: "); Serial.println(kp_ * error);
+
     double output = kp_ * error + ki_ * integral_ + kd_ * derivative;
     return max(min(output, max_output_), min_output_);
 }

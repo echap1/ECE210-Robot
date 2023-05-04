@@ -25,17 +25,17 @@
 
 #define VEL_AT_100     0.21     // m/s
 
-#define HISTORY_LEN 16
-#define THRESHOLD 8
-int16_t linePositions[HISTORY_LEN] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
+#define HISTORY_LEN 10
+#define THRESHOLD 5
+int16_t linePositions[HISTORY_LEN] = {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1};
 
 QTRSensors qtr;
 const uint8_t SensorCount = 8;
 uint16_t sensorValues[SensorCount];
 
-#define kP 0.35
+#define kP 0.2
 #define kI 0  //0.0001
-#define kD (-30)
+#define kD (-250 * 1000)
 PIDController pid(kP, kI, kD, 1000, -1, 1);
 
 void motor_set(double r, double omega);
@@ -87,7 +87,7 @@ double dr = -0.002;
 // basic code to go forward for a second and then turn right
 void loop() {
     // MEASURE
-    int16_t pos = qtr.readLineBlack(sensorValues);
+    int16_t pos = qtr.readLineWhite(sensorValues);
     byte valid_count = 0;
     double avg_pos = 0;
     bool on_line;
@@ -125,17 +125,14 @@ void loop() {
         Serial.print("DT: ");
         Serial.println(t - t_last);
         pid_out = pid.calculate(0, error, t - t_last, t);
-        Serial.print("PIP OUT: ");
+        Serial.print("PID OUT: ");
         Serial.println(pid_out);
         t_last = t;
+//        double fw_vel = 0.1 * (2 - abs(error));
+        double fw_vel = 0.1;
+        motor_set_vel(fw_vel + 0.15 * pid_out, fw_vel - 0.15 * pid_out);
     } else {
         Serial.println("Not on line!");
-    }
-
-    if (on_line) {
-        double fw_vel = 0.1;
-        motor_set_vel(fw_vel * (1 + pid_out), fw_vel * (1 - pid_out));
-    } else {
         motor_set_vel(0, 0);
     }
 
