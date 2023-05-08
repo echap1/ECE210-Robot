@@ -33,7 +33,7 @@ QTRSensors qtr;
 const uint8_t SensorCount = 8;
 uint16_t sensorValues[SensorCount];
 
-#define kP 0.2
+#define kP 0.17
 #define kI 0  //0.0001
 #define kD (-250 * 1000)
 PIDController pid(kP, kI, kD, 1000, -1, 1);
@@ -84,6 +84,9 @@ void setup() {
 double radius = 0.5;
 double dr = -0.002;
 
+double last_valid_pos = 0;
+int valid_pos_len = 0;
+
 // basic code to go forward for a second and then turn right
 void loop() {
     // MEASURE
@@ -118,23 +121,34 @@ void loop() {
     double pid_out = 0;
 
     if (on_line) {
-        Serial.println(avg_pos);
-
-        double error = avg_pos / 0.0332;
-        double t = millis();
-        Serial.print("DT: ");
-        Serial.println(t - t_last);
-        pid_out = pid.calculate(0, error, t - t_last, t);
-        Serial.print("PID OUT: ");
-        Serial.println(pid_out);
-        t_last = t;
-//        double fw_vel = 0.1 * (2 - abs(error));
-        double fw_vel = 0.1;
-        motor_set_vel(fw_vel + 0.15 * pid_out, fw_vel - 0.15 * pid_out);
+        last_valid_pos = avg_pos;
+        valid_pos_len = 1000;
+    } else if (valid_pos_len > 0) {
+        avg_pos = last_valid_pos * 1.1;
     } else {
         Serial.println("Not on line!");
         motor_set_vel(0, 0);
+        return;
     }
+
+    Serial.println(avg_pos);
+
+    double error = avg_pos / 0.0332;
+    double t = millis();
+    Serial.print("DT: ");
+    Serial.println(t - t_last);
+    pid_out = pid.calculate(0, error, t - t_last, t);
+    Serial.print("PID OUT: ");
+    Serial.println(pid_out);
+    t_last = t;
+//  double fw_vel = 0.1 * (2 - abs(error));
+    double fw_vel = on_line ? 0.1 : 0.075;
+    motor_set_vel(fw_vel + 0.15 * pid_out, fw_vel - 0.15 * pid_out);
+
+//    } else {
+//        Serial.println("Not on line!");
+//        motor_set_vel(0, 0);
+//    }
 
 //    delay(100);
 }
