@@ -11,6 +11,7 @@
 
 #define VEL_AT_100     0.21     // m/s
 
+void motor_init();
 void motor_set(double r, double omega);
 void motor_set_vel(double v1, double v2);
 

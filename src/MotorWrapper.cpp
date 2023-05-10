@@ -6,6 +6,10 @@
 #include "Arduino.h"
 #include "Motor.h"
 
+void motor_init() {
+    Motor_Init();
+}
+
 void motor_set(double r, double omega) {
     double v1 = (r - HALF_TRACK_WIDTH) * omega;
     double v2 = (r + HALF_TRACK_WIDTH) * omega;
